@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+package protobuf_session;
+
+enum GameMode {
+  UNKNOWN_MODE = 0;
+  PVP = 1;
+  PVE = 2;
+}
+
+enum GameSessionState {
+  UNKNOWN_STATE = 0;
+  WAITING_FOR_PLAYERS = 1;
+  IN_PROGRESS = 2;
+  FINISHED = 3;
+}
+
+enum GameChoice {
+  UNKNOWN_CHOICE = 0;
+  ROCK = 1;
+  PAPER = 2;
+  SCISSORS = 3;
+}
+
+// todo remove unused ones later
+enum Error {
+  UNKNOWN_ERROR = 0;
+  INVALID_GAME_MODE = 1;
+  INVALID_NUMBER_OF_ROUNDS = 2;
+  INVALID_GAME_SESSION_ID = 3;
+  INVALID_PLAYER_ID = 4;
+  INVALID_GAME_SESSION_STATE = 5;
+  INVALID_GAME_CHOICE = 6;
+  GAME_SESSION_NOT_FOUND = 7;
+  PLAYER_NOT_FOUND = 8;
+  PLAYER_ALREADY_JOINED = 9;
+  PLAYER_NOT_JOINED = 10;
+  PLAYER_ALREADY_LEFT = 11;
+  PLAYER_NOT_LEFT = 12;
+  PLAYER_ALREADY_PLAYED = 13;
+  PLAYER_NOT_PLAYED = 14;
+  PLAYER_ALREADY_FINISHED = 15;
+  PLAYER_NOT_FINISHED = 16;
+  GAME_SESSION_ALREADY_FINISHED = 17;
+  GAME_SESSION_NOT_FINISHED = 18;
+}
+
+message Player {
+  uint64 id = 1;
+  string name = 2;
+  GameChoice choice = 3;
+  uint32 score = 4;
+  bool is_ready = 5;
+}
+
+message GameSession {
+  string title = 1;
+  uint64 id = 2;
+  GameMode mode = 3;
+  uint32 number_of_rounds = 4;
+  uint32 current_round = 5;
+  GameSessionState state = 6;
+  Player player1 = 7;
+  Player player2 = 8;
+}
+
+// create a new game session
+message CreateGameSessionRequest {
+  string title = 1;
+  GameMode mode = 2;
+  uint32 number_of_rounds = 3; // must be odd to decide the winner
+}
+
+message CreateGameSessionResponse {
+  GameSession game_session = 1;
+}
+
+// get data of a game session
+message GetGameSessionDataRequest {
+ uint64 game_session_id = 1;
+}
+
+message GetGameSessionDataResponse {
+  GameSession game_session = 1;
+  uint64 player_id = 2;
+}
+
+// join a game session
+message JoinGameSessionRequest {
+  uint64 game_session_id = 1;
+}
+
+message JoinGameSessionResponse {
+  GameSession game_session = 1;
+}
+
+// leave a game session
+message LeaveGameSessionRequest {
+  uint64 game_session_id = 1;
+  uint64 player_id = 2;
+}
+
+message LeaveGameSessionResponse {
+  GameSession game_session = 1;
+}
+
+/** Request and Response messages **/
+message Request {
+  oneof request {
+    CreateGameSessionRequest create_game_session_request = 1;
+    GetGameSessionDataRequest get_game_session_data_request = 2;
+    JoinGameSessionRequest join_game_session_request = 3;
+    LeaveGameSessionRequest leave_game_session_request = 4;
+  }
+}
+
+message Response {
+  oneof response {
+    CreateGameSessionResponse create_game_session_response = 1;
+    GetGameSessionDataResponse get_game_session_data_response = 2;
+    JoinGameSessionResponse join_game_session_response = 3;
+    LeaveGameSessionResponse leave_game_session_response = 4;
+    Error error = 5;
+  }
+}

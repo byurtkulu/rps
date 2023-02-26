@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package protobuf_gameplay;
+
+message gamePlay {
+  string gameName = 1;
+}
