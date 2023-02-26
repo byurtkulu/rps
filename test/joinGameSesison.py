@@ -1,23 +1,14 @@
 import websocket
-import time
 import build.gameSession_pb2 as gameSessionProto
 
 def create_game_session_request():
     request = gameSessionProto.Request()
-    create_game_session_request = gameSessionProto.CreateGameSessionRequest()
-    title = input("Enter game session title: ")
-    create_game_session_request.title = title
-
-    mode = input("Enter game mode (PVP or PVE): ")
-    if (mode == "PVP"):
-        create_game_session_request.mode = gameSessionProto.GameMode.PVP
-    elif (mode == "PVE"):
-        create_game_session_request.mode = gameSessionProto.GameMode.PVE
-    else:
-        print("Invalid game mode. Defaulting to PVE")
-        create_game_session_request.mode = gameSessionProto.GameMode.PVE
-
-    request.create_game_session_request.CopyFrom(create_game_session_request)
+    join_game_session_request = gameSessionProto.JoinGameSessionRequest()
+    game_session_id = input("Enter game session id you want to join: ")
+    player_name = input("Enter your name: ")
+    join_game_session_request.game_session_id = int(game_session_id)
+    join_game_session_request.player_name = player_name
+    request.join_game_session_request.CopyFrom(join_game_session_request)
     return request.SerializeToString()
 
 def on_message(ws, message):
@@ -30,6 +21,7 @@ def on_error(ws, error):
 
 def on_close(ws, close_status_code, close_msg):
     print(f"### closed {close_status_code} {close_msg} ###")
+
 
 def on_open(ws):
     print("connected")

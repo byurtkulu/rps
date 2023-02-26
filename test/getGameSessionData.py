@@ -1,7 +1,16 @@
 import websocket
+import build.gameSession_pb2 as gameSessionProto
+
+def create_game_session_request():
+    request = gameSessionProto.Request()
+    game_session_id = input("Enter game session id you want to get data from: ")
+    request.get_game_session_data_request.game_session_id = int(game_session_id)
+    return request.SerializeToString()
 
 def on_message(ws, message):
-    print(message)
+    response = gameSessionProto.Response()
+    response.ParseFromString(message.encode('utf-8'))
+    print(response)
 
 def on_error(ws, error):
     print(error)
@@ -11,7 +20,7 @@ def on_close(ws, close_status_code, close_msg):
 
 def on_open(ws):
     print("connected")
-    ws.send(b"This is client 2")
+    ws.send(create_game_session_request())
 
 if __name__ == "__main__":
     websocket.enableTrace(True)

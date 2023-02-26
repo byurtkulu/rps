@@ -11,8 +11,8 @@ enum GameMode {
 enum GameSessionState {
   UNKNOWN_STATE = 0;
   WAITING_FOR_PLAYERS = 1;
-  IN_PROGRESS = 2;
-  FINISHED = 3;
+  PLAYING = 2;
+  FINISHED = 4;
 }
 
 enum GameChoice {
@@ -23,7 +23,7 @@ enum GameChoice {
 }
 
 // todo remove unused ones later
-enum Error {
+enum ErrorCode {
   UNKNOWN_ERROR = 0;
   INVALID_GAME_MODE = 1;
   INVALID_NUMBER_OF_ROUNDS = 2;
@@ -43,6 +43,12 @@ enum Error {
   PLAYER_NOT_FINISHED = 16;
   GAME_SESSION_ALREADY_FINISHED = 17;
   GAME_SESSION_NOT_FINISHED = 18;
+  GAME_SESSION_NOT_WAITING_FOR_PLAYERS = 19;
+  GAME_SESSION_FULL = 20;
+}
+
+message Error {
+  ErrorCode error_code = 1;
 }
 
 message Player {
@@ -50,25 +56,23 @@ message Player {
   string name = 2;
   GameChoice choice = 3;
   uint32 score = 4;
-  bool is_ready = 5;
+  bool is_ai = 5;
 }
 
 message GameSession {
   string title = 1;
   uint64 id = 2;
   GameMode mode = 3;
-  uint32 number_of_rounds = 4;
-  uint32 current_round = 5;
-  GameSessionState state = 6;
-  Player player1 = 7;
-  Player player2 = 8;
+  GameSessionState state = 4;
+  Player player1 = 5;
+  Player player2 = 6;
 }
 
 // create a new game session
 message CreateGameSessionRequest {
   string title = 1;
   GameMode mode = 2;
-  uint32 number_of_rounds = 3; // must be odd to decide the winner
+  uint32 number_of_rounds = 3;
 }
 
 message CreateGameSessionResponse {
@@ -82,26 +86,17 @@ message GetGameSessionDataRequest {
 
 message GetGameSessionDataResponse {
   GameSession game_session = 1;
-  uint64 player_id = 2;
 }
 
 // join a game session
 message JoinGameSessionRequest {
   uint64 game_session_id = 1;
+  string player_name = 2;
 }
 
 message JoinGameSessionResponse {
   GameSession game_session = 1;
-}
-
-// leave a game session
-message LeaveGameSessionRequest {
-  uint64 game_session_id = 1;
   uint64 player_id = 2;
-}
-
-message LeaveGameSessionResponse {
-  GameSession game_session = 1;
 }
 
 /** Request and Response messages **/
@@ -110,7 +105,6 @@ message Request {
     CreateGameSessionRequest create_game_session_request = 1;
     GetGameSessionDataRequest get_game_session_data_request = 2;
     JoinGameSessionRequest join_game_session_request = 3;
-    LeaveGameSessionRequest leave_game_session_request = 4;
   }
 }
 
@@ -119,7 +113,6 @@ message Response {
     CreateGameSessionResponse create_game_session_response = 1;
     GetGameSessionDataResponse get_game_session_data_response = 2;
     JoinGameSessionResponse join_game_session_response = 3;
-    LeaveGameSessionResponse leave_game_session_response = 4;
     Error error = 5;
   }
 }

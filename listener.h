@@ -17,7 +17,8 @@ namespace Websocket {
         Listener(const boost::asio::any_io_executor &executor,
                  const boost::asio::ip::tcp::endpoint &endpoint,
                  std::shared_ptr<rps::GameSessionManager> game_session_manager)
-                : executor_(executor), acceptor_(make_strand(executor))
+                : executor_(executor)
+                , acceptor_(make_strand(executor))
                 , game_session_manager_(std::move(game_session_manager)) {
             acceptor_.open(endpoint.protocol());
             acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
