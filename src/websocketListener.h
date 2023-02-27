@@ -9,7 +9,7 @@
 #include <memory>
 #include <boost/asio.hpp>
 #include "gameSessionManager.h"
-#include "session.h"
+#include "websocketSession.h"
 
 namespace Websocket {
     class Listener : public std::enable_shared_from_this<Listener> {

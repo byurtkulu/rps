@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 #include <utility>
-#include "build/gameSession.pb.h"
+#include "../build/gameSession.pb.h"
 
 
 namespace rps {

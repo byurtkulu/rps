@@ -34,11 +34,11 @@ add_executable(rps rps.cpp          /
         ${PROTO_HDRS_GAME_PLAY}     /
         ${PY_SOURCES_GAME_SESSION}  /
         ${PY_SOURCES_GAME_PLAY}     /
-        listener.h                  /
-        session.h                   /
-        gameSessionManager.h        /
-        gameSession.h               /
-        util.h                      /
+        src/websocketListener.h /
+        src/websocketSession.h /
+        src/gameSessionManager.h /
+        src/gameSession.h /
+        util/util.h /
 )
 
 # Link the protobuf library

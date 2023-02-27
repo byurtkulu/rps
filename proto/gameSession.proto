@@ -45,6 +45,8 @@ enum ErrorCode {
   GAME_SESSION_NOT_FINISHED = 18;
   GAME_SESSION_NOT_WAITING_FOR_PLAYERS = 19;
   GAME_SESSION_FULL = 20;
+  REQUEST_NOT_SET = 21;
+  UNKNOWN_REQUEST = 22;
 }
 
 message Error {
@@ -52,16 +54,16 @@ message Error {
 }
 
 message Player {
-  uint64 id = 1;
+  fixed64 id = 1;
   string name = 2;
   GameChoice choice = 3;
-  uint32 score = 4;
+  fixed64 score = 4;
   bool is_ai = 5;
 }
 
 message GameSession {
   string title = 1;
-  uint64 id = 2;
+  fixed64 id = 2;
   GameMode mode = 3;
   GameSessionState state = 4;
   Player player1 = 5;
@@ -72,7 +74,6 @@ message GameSession {
 message CreateGameSessionRequest {
   string title = 1;
   GameMode mode = 2;
-  uint32 number_of_rounds = 3;
 }
 
 message CreateGameSessionResponse {
@@ -81,7 +82,7 @@ message CreateGameSessionResponse {
 
 // get data of a game session
 message GetGameSessionDataRequest {
- uint64 game_session_id = 1;
+  fixed64 game_session_id = 1;
 }
 
 message GetGameSessionDataResponse {
@@ -90,13 +91,13 @@ message GetGameSessionDataResponse {
 
 // join a game session
 message JoinGameSessionRequest {
-  uint64 game_session_id = 1;
+  fixed64 game_session_id = 1;
   string player_name = 2;
 }
 
 message JoinGameSessionResponse {
   GameSession game_session = 1;
-  uint64 player_id = 2;
+  fixed64 player_id = 2;
 }
 
 /** Request and Response messages **/

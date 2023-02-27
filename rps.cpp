@@ -2,13 +2,13 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
-#include "listener.h"
-#include "gameSessionManager.h"
+#include "src/websocketListener.h"
+#include "src/gameSessionManager.h"
 
 int main() {
     auto const address = boost::asio::ip::make_address("127.0.0.1");
-    auto const port = static_cast<uint16_t>(8080);
-    auto const threads = 50;
+    auto const port = static_cast<int16_t>(8080);
+    auto const threads = 100; // std::max<int64_t>(1, std::thread::hardware_concurrency());
     std::cout << "Starting server on " << address << ":" << port << " with "
               << threads << " threads" << std::endl;
     try {

@@ -6,15 +6,15 @@
 
 #include <iostream>
 #include <string>
-#include "build/gameSession.pb.h"
-#include "build/gamePlay.pb.h"
+#include "../build/gameSession.pb.h"
+#include "../build/gamePlay.pb.h"
 #include "gameSession.h"
-#include "util.h"
+#include "../util/util.h"
 
 namespace rps {
     class GameSessionManager {
-        using GameSessionID = uint64_t;
-        using PlayerID = uint64_t;
+        using GameSessionID = int64_t;
+        using PlayerID = int64_t;
     public:
         GameSessionManager() = default;
 
@@ -120,7 +120,7 @@ namespace rps {
             return response_to_join_game_session(data, player->id());
         }
 
-        std::string response_to_join_game_session(const GameSession::GameSessionData& data, uint64_t player_id) {
+        std::string response_to_join_game_session(const GameSession::GameSessionData& data, int64_t player_id) {
             protobuf_session::Response response_wrapper;
             response_wrapper.mutable_join_game_session_response()->mutable_game_session()->CopyFrom(data);
             response_wrapper.mutable_join_game_session_response()->set_player_id(player_id);

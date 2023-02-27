@@ -17,7 +17,9 @@ namespace Websocket {
     public:
         Session(boost::asio::ip::tcp::socket &&socket, std::shared_ptr<rps::GameSessionManager> game_session_manager)
                 : websocket_(std::move(socket))
-                , game_session_manager_(std::move(game_session_manager)) {}
+                , game_session_manager_(std::move(game_session_manager)) {
+            websocket_.binary(true);
+        }
 
         void run() {
             boost::asio::dispatch(
@@ -79,6 +81,7 @@ namespace Websocket {
 
         void async_reply_all() {
             if (outgoing_messages_.empty()) {
+                async_read();
                 return;
             }
             websocket_.async_write(

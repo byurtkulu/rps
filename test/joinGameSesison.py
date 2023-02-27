@@ -25,7 +25,7 @@ def on_close(ws, close_status_code, close_msg):
 
 def on_open(ws):
     print("connected")
-    ws.send(create_game_session_request())
+    ws.send(create_game_session_request(), opcode=websocket.ABNF.OPCODE_BINARY)
 
 if __name__ == "__main__":
     websocket.enableTrace(True)
