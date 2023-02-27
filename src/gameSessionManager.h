@@ -6,6 +6,8 @@
 
 #include <iostream>
 #include <string>
+#include <mutex>
+#include <shared_mutex>
 #include "../build/gameSession.pb.h"
 #include "../build/gamePlay.pb.h"
 #include "gameSession.h"
@@ -24,12 +26,16 @@ namespace rps {
 
             switch (request.request_case()) {
                 case protobuf_session::Request::kCreateGameSessionRequest:
+                    std::cout << "Create game session request" << std::endl;
                     return create_game_session(request.create_game_session_request());
                 case protobuf_session::Request::kGetGameSessionDataRequest:
+                    std::cout << "Get game session data request" << std::endl;
                     return get_game_session_data(request.get_game_session_data_request());
                 case protobuf_session::Request::kJoinGameSessionRequest:
+                    std::cout << "Join game session request" << std::endl;
                     return join_game_session(request.join_game_session_request());
                 case protobuf_session::Request::kWaitTillGameReadyRequest:
+                    std::cout << "Wait till game ready request" << std::endl;
                     return wait_till_game_ready(request.wait_till_game_ready_request());
                 case protobuf_session::Request::REQUEST_NOT_SET:
                     std::cout << "Request not set" << std::endl;
@@ -43,6 +49,7 @@ namespace rps {
     private:
         // handlers
         std::string create_game_session(const protobuf_session::CreateGameSessionRequest &request) {
+            std::unique_lock lock(game_sessions_mutex_);
             GameSession::GameSessionData data;
             data.set_id(game_session_counter_.next());
             data.set_title(request.title());
@@ -62,6 +69,7 @@ namespace rps {
         }
 
         std::string get_game_session_data(const protobuf_session::GetGameSessionDataRequest& request) {
+            std::shared_lock lock(game_sessions_mutex_);
             std::cout << "Get game session data request: \n" << request.DebugString() << std::endl;
             auto itr = game_sessions_.find(request.game_session_id()); //->data().SerializeAsString();
             if (itr == game_sessions_.end()) {
@@ -72,6 +80,7 @@ namespace rps {
         }
 
         std::string join_game_session(const protobuf_session::JoinGameSessionRequest& request) {
+            std::unique_lock lock(game_sessions_mutex_);
             std::cout << "Join game session request: \n" << request.DebugString() << std::endl;
             auto itr = game_sessions_.find(request.game_session_id()); //->data().SerializeAsString();
             if (itr == game_sessions_.end()) {
@@ -110,25 +119,29 @@ namespace rps {
         }
 
         std::string wait_till_game_ready(const protobuf_session::WaitTillGameReadyRequest& request) {
-            auto itr = game_sessions_.find(request.game_session_id());
-            if (itr == game_sessions_.end()) {
-                std::cout << "Game session not found" << std::endl;
-                return error_serialized(protobuf_session::ErrorCode::GAME_SESSION_NOT_FOUND);
-            }
-
-            std::unique_ptr<GameSession>& game_session = itr->second;
             static constexpr int MAX_WAITING_TIME = 120*1000; // 2 minutes
+            static constexpr int SLEEP_FOR = 1500; // 1.5 seconds
             uint32_t waiting_time = 0;
-            while (game_session->data().state() != protobuf_session::GameSessionState::READY) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
-                waiting_time += 500;
+            auto state = protobuf_session::GameSessionState::UNKNOWN_STATE;
+            while (state != protobuf_session::GameSessionState::READY) {
+                std::this_thread::sleep_for(std::chrono::milliseconds (SLEEP_FOR));
+                std::shared_lock lock(game_sessions_mutex_); // this blocks any write operation
+                auto itr = game_sessions_.find(request.game_session_id());
+                if (itr == game_sessions_.end()) {
+                    std::cout << "Game session not found" << std::endl;
+                    return error_serialized(protobuf_session::ErrorCode::GAME_SESSION_NOT_FOUND);
+                }
+                waiting_time += SLEEP_FOR;
                 if (waiting_time > MAX_WAITING_TIME) {
-                    std::cout << "Game session is not ready" << std::endl;
+                    std::cout << "Game session is not become ready in " << (MAX_WAITING_TIME/(1000)) << " seconds." << std::endl;
                     return error_serialized(protobuf_session::ErrorCode::GAME_SESSION_NOT_READY);
                 }
+                state = itr->second->data().state();
+                if (state == protobuf_session::GameSessionState::READY || state == protobuf_session::GameSessionState::PLAYING) {
+                    return response_to_respond_when_game_ready(itr->second->data());
+                }
             }
-
-            return response_to_respond_when_game_ready(game_session->data());
+            return error_serialized(protobuf_session::ErrorCode::UNKNOWN_ERROR);
         }
 
         // responses
@@ -159,8 +172,6 @@ namespace rps {
             return response_wrapper.SerializeAsString();
         }
 
-
-
         // error response
         std::string error_serialized(protobuf_session::ErrorCode err) {
             protobuf_session::Response response_wrapper;
@@ -170,7 +181,7 @@ namespace rps {
 
     private:
         std::unordered_map<GameSessionID, std::unique_ptr<GameSession>> game_sessions_;
-        std::unordered_map<PlayerID, GameSessionID> player_to_game_session_;
+        std::shared_mutex game_sessions_mutex_;
         util::Counter game_session_counter_;
         util::Counter player_counter_;
     };

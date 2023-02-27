@@ -52,6 +52,7 @@ enum ErrorCode {
   REQUEST_NOT_SET = 21;
   UNKNOWN_REQUEST = 22;
   GAME_SESSION_NOT_READY = 23;
+  LOCK_EXCEPTION = 24;
 }
 
 ///////////////
