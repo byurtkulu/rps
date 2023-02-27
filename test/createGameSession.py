@@ -8,24 +8,24 @@ def create_game_session_request(ws):
     request = gameSessionProto.Request()
     create_game_session_request = gameSessionProto.CreateGameSessionRequest()
 
-    # is_exit = input("Type \"exit\" to disconnect or press enter to continue: ")
-    # if (is_exit.lower() == "exit"):
-    #     ws.close()
-    #     return
+    is_exit = input("Type \"exit\" to disconnect or press enter to continue: ")
+    if (is_exit.lower() == "exit"):
+        ws.close()
+        return
 
-    # title = input("Enter game session title: ")
-    # create_game_session_request.title = title
-    # mode = input("Enter game mode (PVP or PVE): ")
-    # if (mode.lower() == "pvp"):
-    #     create_game_session_request.mode = gameSessionProto.GameMode.PVP
-    # elif (mode.lower() == "pve"):
-    #     create_game_session_request.mode = gameSessionProto.GameMode.PVE
-    # else:
-    #     print("Invalid game mode. Defaulting to PVE")
-    #     create_game_session_request.mode = gameSessionProto.GameMode.PVE
+    title = input("Enter game session title: ")
+    create_game_session_request.title = title
+    mode = input("Enter game mode (PVP or PVE): ")
+    if (mode.lower() == "pvp"):
+        create_game_session_request.mode = gameSessionProto.GameMode.PVP
+    elif (mode.lower() == "pve"):
+        create_game_session_request.mode = gameSessionProto.GameMode.PVE
+    else:
+        print("Invalid game mode. Defaulting to PVE")
+        create_game_session_request.mode = gameSessionProto.GameMode.PVE
 
-    create_game_session_request.title = "test"
-    create_game_session_request.mode = gameSessionProto.GameMode.PVP
+    # create_game_session_request.title = "test"
+    # create_game_session_request.mode = gameSessionProto.GameMode.PVP
 
     request.create_game_session_request.CopyFrom(create_game_session_request)
     return request.SerializeToString()

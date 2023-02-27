@@ -8,7 +8,7 @@
 int main() {
     auto const address = boost::asio::ip::make_address("127.0.0.1");
     auto const port = static_cast<int16_t>(8080);
-    auto const threads = 100; // std::max<int64_t>(1, std::thread::hardware_concurrency());
+    auto const threads = 16; // std::max<int64_t>(1, std::thread::hardware_concurrency());
     std::cout << "Starting server on " << address << ":" << port << " with "
               << threads << " threads" << std::endl;
     try {

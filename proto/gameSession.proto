@@ -1,6 +1,9 @@
 syntax = "proto3";
-
 package protobuf_session;
+
+///////////
+// Enums //
+///////////
 
 enum GameMode {
   UNKNOWN_MODE = 0;
@@ -11,7 +14,8 @@ enum GameMode {
 enum GameSessionState {
   UNKNOWN_STATE = 0;
   WAITING_FOR_PLAYERS = 1;
-  PLAYING = 2;
+  READY = 2;
+  PLAYING = 3;
   FINISHED = 4;
 }
 
@@ -47,12 +51,14 @@ enum ErrorCode {
   GAME_SESSION_FULL = 20;
   REQUEST_NOT_SET = 21;
   UNKNOWN_REQUEST = 22;
+  GAME_SESSION_NOT_READY = 23;
 }
 
-message Error {
-  ErrorCode error_code = 1;
-}
+///////////////
+// Game Data //
+///////////////
 
+// player data - stored inside game session
 message Player {
   fixed64 id = 1;
   string name = 2;
@@ -60,7 +66,8 @@ message Player {
   fixed64 score = 4;
   bool is_ai = 5;
 }
-
+//
+// game session data
 message GameSession {
   string title = 1;
   fixed64 id = 2;
@@ -70,7 +77,11 @@ message GameSession {
   Player player2 = 6;
 }
 
-// create a new game session
+////////////////////////////
+// Requests and responses //
+//   For starting game    //
+////////////////////////////
+
 message CreateGameSessionRequest {
   string title = 1;
   GameMode mode = 2;
@@ -80,7 +91,6 @@ message CreateGameSessionResponse {
   GameSession game_session = 1;
 }
 
-// get data of a game session
 message GetGameSessionDataRequest {
   fixed64 game_session_id = 1;
 }
@@ -89,7 +99,6 @@ message GetGameSessionDataResponse {
   GameSession game_session = 1;
 }
 
-// join a game session
 message JoinGameSessionRequest {
   fixed64 game_session_id = 1;
   string player_name = 2;
@@ -100,12 +109,35 @@ message JoinGameSessionResponse {
   fixed64 player_id = 2;
 }
 
-/** Request and Response messages **/
+message Error {
+  ErrorCode error_code = 1;
+}
+
+////////////////////////////
+// Requests and responses //
+//      For gameplay      //
+////////////////////////////
+
+message WaitTillGameReadyRequest {
+  fixed64 game_session_id = 1;
+}
+
+message WaitTillGameReadyResponse {
+  GameSession game_session = 1;
+}
+
+
+
+/////////////////////////////////////////////////////
+// Wrappers for requests and responses             //
+// Use for communication between client and server //
+/////////////////////////////////////////////////////
 message Request {
   oneof request {
     CreateGameSessionRequest create_game_session_request = 1;
     GetGameSessionDataRequest get_game_session_data_request = 2;
     JoinGameSessionRequest join_game_session_request = 3;
+    WaitTillGameReadyRequest wait_till_game_ready_request = 4;
   }
 }
 
@@ -114,6 +146,7 @@ message Response {
     CreateGameSessionResponse create_game_session_response = 1;
     GetGameSessionDataResponse get_game_session_data_response = 2;
     JoinGameSessionResponse join_game_session_response = 3;
+    WaitTillGameReadyResponse wait_till_game_ready_response = 4;
     Error error = 5;
   }
 }

@@ -29,16 +29,19 @@ namespace rps {
                     return get_game_session_data(request.get_game_session_data_request());
                 case protobuf_session::Request::kJoinGameSessionRequest:
                     return join_game_session(request.join_game_session_request());
+                case protobuf_session::Request::kWaitTillGameReadyRequest:
+                    return wait_till_game_ready(request.wait_till_game_ready_request());
                 case protobuf_session::Request::REQUEST_NOT_SET:
                     std::cout << "Request not set" << std::endl;
-                    return "Request not set";
+                    return error_serialized(protobuf_session::ErrorCode::REQUEST_NOT_SET);
                 default:
                     std::cout << "Unknown request" << std::endl;
-                    return "Unknown request";
+                    return error_serialized(protobuf_session::ErrorCode::UNKNOWN_REQUEST);
             }
         }
 
     private:
+        // handlers
         std::string create_game_session(const protobuf_session::CreateGameSessionRequest &request) {
             GameSession::GameSessionData data;
             data.set_id(game_session_counter_.next());
@@ -58,14 +61,6 @@ namespace rps {
             return serialized_response;
         }
 
-        std::string response_to_create_game_session(const GameSession::GameSessionData& data) {
-            std::cout << "*** create game session data ***\n" << data.DebugString() << std::endl;
-            protobuf_session::Response response_wrapper;
-            response_wrapper.mutable_create_game_session_response()->mutable_game_session()->CopyFrom(data);
-            auto serialized = response_wrapper.SerializeAsString();
-            return serialized;
-        }
-
         std::string get_game_session_data(const protobuf_session::GetGameSessionDataRequest& request) {
             std::cout << "Get game session data request: \n" << request.DebugString() << std::endl;
             auto itr = game_sessions_.find(request.game_session_id()); //->data().SerializeAsString();
@@ -74,12 +69,6 @@ namespace rps {
                 return error_serialized(protobuf_session::ErrorCode::GAME_SESSION_NOT_FOUND);
             }
             return response_to_get_game_session_data(itr->second->data());
-        }
-
-        std::string response_to_get_game_session_data(const GameSession::GameSessionData& data) {
-            protobuf_session::Response response_wrapper;
-            response_wrapper.mutable_get_game_session_data_response()->mutable_game_session()->CopyFrom(data);
-            return response_wrapper.SerializeAsString();
         }
 
         std::string join_game_session(const protobuf_session::JoinGameSessionRequest& request) {
@@ -114,10 +103,47 @@ namespace rps {
             }
 
             if (data.has_player1() and data.has_player2()) {
-                data.set_state(protobuf_session::GameSessionState::PLAYING);
+                data.set_state(protobuf_session::GameSessionState::READY);
             }
 
             return response_to_join_game_session(data, player->id());
+        }
+
+        std::string wait_till_game_ready(const protobuf_session::WaitTillGameReadyRequest& request) {
+            auto itr = game_sessions_.find(request.game_session_id());
+            if (itr == game_sessions_.end()) {
+                std::cout << "Game session not found" << std::endl;
+                return error_serialized(protobuf_session::ErrorCode::GAME_SESSION_NOT_FOUND);
+            }
+
+            std::unique_ptr<GameSession>& game_session = itr->second;
+            static constexpr int MAX_WAITING_TIME = 120*1000; // 2 minutes
+            uint32_t waiting_time = 0;
+            while (game_session->data().state() != protobuf_session::GameSessionState::READY) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                waiting_time += 500;
+                if (waiting_time > MAX_WAITING_TIME) {
+                    std::cout << "Game session is not ready" << std::endl;
+                    return error_serialized(protobuf_session::ErrorCode::GAME_SESSION_NOT_READY);
+                }
+            }
+
+            return response_to_respond_when_game_ready(game_session->data());
+        }
+
+        // responses
+        std::string response_to_create_game_session(const GameSession::GameSessionData& data) {
+            std::cout << "*** create game session data ***\n" << data.DebugString() << std::endl;
+            protobuf_session::Response response_wrapper;
+            response_wrapper.mutable_create_game_session_response()->mutable_game_session()->CopyFrom(data);
+            auto serialized = response_wrapper.SerializeAsString();
+            return serialized;
+        }
+
+        std::string response_to_get_game_session_data(const GameSession::GameSessionData& data) {
+            protobuf_session::Response response_wrapper;
+            response_wrapper.mutable_get_game_session_data_response()->mutable_game_session()->CopyFrom(data);
+            return response_wrapper.SerializeAsString();
         }
 
         std::string response_to_join_game_session(const GameSession::GameSessionData& data, int64_t player_id) {
@@ -127,6 +153,15 @@ namespace rps {
             return response_wrapper.SerializeAsString();
         }
 
+        std::string  response_to_respond_when_game_ready(const GameSession::GameSessionData& data) {
+            protobuf_session::Response response_wrapper;
+            response_wrapper.mutable_wait_till_game_ready_response()->mutable_game_session()->CopyFrom(data);
+            return response_wrapper.SerializeAsString();
+        }
+
+
+
+        // error response
         std::string error_serialized(protobuf_session::ErrorCode err) {
             protobuf_session::Response response_wrapper;
             response_wrapper.mutable_error()->set_error_code(err);

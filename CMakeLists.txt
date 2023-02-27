@@ -26,20 +26,15 @@ protobuf_generate_python(PY_SOURCES_GAME_SESSION ${PROTO_FILE_GAME_SESSION})
 protobuf_generate_python(PY_SOURCES_GAME_PLAY ${PROTO_FILE_GAME_PLAY})
 
 # Add your target executable
-add_executable(rps rps.cpp          /
-        ${MY_SOURCES}               /
-        ${PROTO_SRCS_GAME_SESSION}  /
-        ${PROTO_HDRS_GAME_SESSION}  /
-        ${PROTO_SRCS_GAME_PLAY}     /
-        ${PROTO_HDRS_GAME_PLAY}     /
-        ${PY_SOURCES_GAME_SESSION}  /
-        ${PY_SOURCES_GAME_PLAY}     /
-        src/websocketListener.h /
-        src/websocketSession.h /
-        src/gameSessionManager.h /
-        src/gameSession.h /
-        util/util.h /
-)
+add_executable(rps rps.cpp                                                                                                  /
+        ${MY_SOURCES}                                                                                                       /
+        ${PROTO_SRCS_GAME_SESSION}                                                                                          /
+        ${PROTO_HDRS_GAME_SESSION}                                                                                          /
+        ${PROTO_SRCS_GAME_PLAY}                                                                                             /
+        ${PROTO_HDRS_GAME_PLAY}                                                                                             /
+        ${PY_SOURCES_GAME_SESSION}                                                                                          /
+        ${PY_SOURCES_GAME_PLAY}                                                                                             /
+    src/websocketListener.h src/websocketSession.h src/gameSessionManager.h src/gameSession.h util/util.h)
 
 # Link the protobuf library
 target_link_libraries(rps protobuf::libprotobuf ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES})
