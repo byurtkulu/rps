@@ -9,17 +9,17 @@ namespace rps::util {
     class Counter {
     public:
         Counter() = default;
-        Counter(int64_t c) : c_(c) {}
+        Counter(uint64_t c) : c_(c) {}
 
-        int64_t next() {
+        uint64_t next() {
             return ++c_;
         }
 
-        int64_t current() const {
+        uint64_t current() const {
             return c_;
         }
 
     private:
-        int64_t c_ = 0;
+        uint64_t c_ = 0;
     };
 }

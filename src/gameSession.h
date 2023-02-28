@@ -32,7 +32,6 @@ namespace rps {
             return data_;
         }
 
-
     private:
         GameSessionData data_;
     };

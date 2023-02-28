@@ -53,6 +53,8 @@ enum ErrorCode {
   UNKNOWN_REQUEST = 22;
   GAME_SESSION_NOT_READY = 23;
   LOCK_EXCEPTION = 24;
+  PLAYER_ID_NOT_VALID = 25;
+  TIMEOUT = 26;
 }
 
 ///////////////
@@ -76,6 +78,8 @@ message GameSession {
   GameSessionState state = 4;
   Player player1 = 5;
   Player player2 = 6;
+  bool is_draw = 7;
+  fixed64 winner_id = 8;
 }
 
 ////////////////////////////
@@ -119,6 +123,8 @@ message Error {
 //      For gameplay      //
 ////////////////////////////
 
+// Returns response when both players are joined
+// timeout: 2 minutes
 message WaitTillGameReadyRequest {
   fixed64 game_session_id = 1;
 }
@@ -127,7 +133,23 @@ message WaitTillGameReadyResponse {
   GameSession game_session = 1;
 }
 
+message RockPaperScissorsRequest {
+  fixed64 game_session_id = 1;
+  fixed64 player_id = 2;
+  GameChoice choice = 3;
+}
 
+message RockPaperScissorsResponse {
+  GameSession game_session = 1;
+}
+
+message WaitTillGameFinishRequest {
+  fixed64 game_session_id = 1;
+}
+
+message WaitTillGameFinishResponse {
+  GameSession game_session = 1;
+}
 
 /////////////////////////////////////////////////////
 // Wrappers for requests and responses             //
@@ -139,6 +161,8 @@ message Request {
     GetGameSessionDataRequest get_game_session_data_request = 2;
     JoinGameSessionRequest join_game_session_request = 3;
     WaitTillGameReadyRequest wait_till_game_ready_request = 4;
+    RockPaperScissorsRequest rock_paper_scissors_request = 5;
+    WaitTillGameFinishRequest wait_till_game_finish_request = 6;
   }
 }
 
@@ -148,6 +172,8 @@ message Response {
     GetGameSessionDataResponse get_game_session_data_response = 2;
     JoinGameSessionResponse join_game_session_response = 3;
     WaitTillGameReadyResponse wait_till_game_ready_response = 4;
-    Error error = 5;
+    RockPaperScissorsResponse rock_paper_scissors_response = 5;
+    WaitTillGameFinishResponse wait_till_game_finish_response = 6;
+    Error error = 7;
   }
 }
