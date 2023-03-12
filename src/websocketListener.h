@@ -44,7 +44,7 @@ namespace Websocket {
             } else {
                 auto session = std::make_shared<Session>(std::move(socket), game_session_manager_);
                 sessions_.emplace_back(session);
-                session->run();
+                session->start();
             }
             async_accept();
         }

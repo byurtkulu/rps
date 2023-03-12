@@ -17,13 +17,6 @@ namespace rps {
     public:
         explicit GameSession(GameSessionData&& data) : data_(std::move(data)) {}
 
-        ~GameSession() {}
-
-        GameSession(const GameSession& other) = delete;
-        GameSession& operator=(const GameSession& other) = delete;
-        GameSession(GameSession&& other) = delete;
-        GameSession& operator=(GameSession&& other) = delete;
-
         const GameSessionData& data() const {
             return data_;
         }

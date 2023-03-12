@@ -1,7 +1,7 @@
 import websocket
 import build.gameSession_pb2 as gameSessionProto
 
-def create_game_session_request(ws):
+def wait_till_game_ready_request(ws):
     request = gameSessionProto.Request()
     wait_till_game_ready_request = gameSessionProto.WaitTillGameReadyRequest()
     game_session_id = input("Enter game session id you want to subscribe: ")
@@ -23,7 +23,7 @@ def on_close(ws, close_status_code, close_msg):
 
 def on_open(ws):
     print("connected")
-    ws.send(create_game_session_request(ws), opcode=websocket.ABNF.OPCODE_BINARY)
+    ws.send(wait_till_game_ready_request(ws), opcode=websocket.ABNF.OPCODE_BINARY)
 
 if __name__ == "__main__":
     websocket.enableTrace(True)

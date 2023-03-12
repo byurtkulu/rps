@@ -19,17 +19,18 @@ namespace Websocket {
                 : websocket_(std::move(socket))
                 , game_session_manager_(std::move(game_session_manager)) {
             websocket_.binary(true);
+            client_ = websocket_.next_layer().socket().remote_endpoint().address().to_string() + ":" + std::to_string(websocket_.next_layer().socket().remote_endpoint().port());
         }
 
-        void run() {
+        void start() {
             boost::asio::dispatch(
                     websocket_.get_executor(),
-                    boost::beast::bind_front_handler(&Session::on_run, shared_from_this())
+                    boost::beast::bind_front_handler(&Session::on_start, shared_from_this())
             );
         }
 
     private:
-        void on_run() {
+        void on_start() {
             websocket_.set_option(
                     boost::beast::websocket::stream_base::timeout::suggested(boost::beast::role_type::server)
             );
@@ -51,6 +52,8 @@ namespace Websocket {
                 std::cout << "Error: " << err.message() << std::endl;
                 return;
             }
+
+            game_session_manager_->new_connection(client_);
             async_read();
         }
 
@@ -67,8 +70,8 @@ namespace Websocket {
                 std::cout << "Error: " << err.message() << std::endl;
                 return;
             }
-
-            async_reply(game_session_manager_->handle(std::move(boost::beast::buffers_to_string(buffer_.data()))));
+            std::cout << "Reading from client: " << client_ << std::endl << std::flush; // TODO remove
+            async_reply(game_session_manager_->handle(client_, std::move(boost::beast::buffers_to_string(buffer_.data()))));
         }
 
         void async_reply(std::string&& message) {
@@ -104,6 +107,7 @@ namespace Websocket {
         boost::beast::flat_buffer buffer_;
         std::shared_ptr<rps::GameSessionManager> game_session_manager_;
         std::deque<std::string> outgoing_messages_;
+        std::string client_;
     };
 
 } // namespace Websocket

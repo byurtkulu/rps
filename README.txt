@@ -1,7 +1,0 @@
--Player can leave mid game.
-
-
-
-
-
-

@@ -15,12 +15,12 @@ int main() {
         auto game_session_manager = std::make_shared<rps::GameSessionManager>();
 
         boost::asio::thread_pool ioc(threads);
-        auto server = std::make_shared<Websocket::Listener>(
+        auto listener = std::make_shared<Websocket::Listener>(
                 ioc.get_executor(),
                 boost::asio::ip::tcp::endpoint{address, port},
                 game_session_manager);
 
-        server->start();
+        listener->start();
         ioc.join();
     } catch (boost::beast::system_error const& sys_err) {
         std::cerr << "Error: " << sys_err.what() << std::endl;

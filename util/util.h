@@ -19,6 +19,10 @@ namespace rps::util {
             return c_;
         }
 
+        void reset() {
+            c_ = 0;
+        }
+
     private:
         uint64_t c_ = 0;
     };
