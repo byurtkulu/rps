@@ -2,7 +2,7 @@
 
 ## Description
 
-This is a simple rock-paper-scissors game. It is a project for the imc home assignment as of 2 March 2023.
+This is a simple rock-paper-scissors game.
 
 A player can play against the computer or against another player. The game can result in a win, a loss or a draw.
 
