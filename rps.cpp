@@ -19,7 +19,7 @@ int main() {
                 ioc.get_executor(),
                 boost::asio::ip::tcp::endpoint{address, port},
                 game_session_manager);
-
+        std::cout << "main thread id: " << std::this_thread::get_id() << std::endl;
         listener->start();
         ioc.join();
     } catch (boost::beast::system_error const& sys_err) {

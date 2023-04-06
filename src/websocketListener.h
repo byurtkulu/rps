@@ -24,6 +24,7 @@ namespace Websocket {
             acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
             acceptor_.bind(endpoint);
             acceptor_.listen(boost::asio::ip::tcp::acceptor::max_listen_connections);
+            std::cout << "Listener obj address " << this << std::endl;
         }
 
         void start() {
@@ -32,6 +33,8 @@ namespace Websocket {
 
     private:
         void async_accept() {
+            std::cout << "Listener async_accept thread id: " << std::this_thread::get_id() << std::endl;
+            threadIds.insert(std::this_thread::get_id());
             acceptor_.async_accept(
                     boost::asio::make_strand(executor_),
                     boost::beast::bind_front_handler(&Listener::on_accept, shared_from_this())
@@ -44,6 +47,7 @@ namespace Websocket {
             } else {
                 auto session = std::make_shared<Session>(std::move(socket), game_session_manager_);
                 sessions_.emplace_back(session);
+                std::cout << "Listener on_accept thread id: " << std::this_thread::get_id() << std::endl;
                 session->start();
             }
             async_accept();
@@ -54,5 +58,6 @@ namespace Websocket {
         boost::asio::ip::tcp::acceptor acceptor_;
         std::shared_ptr<rps::GameSessionManager> game_session_manager_;
         std::list<std::weak_ptr<Session>> sessions_;
+        std::unordered_set<std::__thread_id> threadIds;
     };
 } // namespace Websocket

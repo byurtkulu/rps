@@ -20,9 +20,11 @@ namespace Websocket {
                 , game_session_manager_(std::move(game_session_manager)) {
             websocket_.binary(true);
             client_ = websocket_.next_layer().socket().remote_endpoint().address().to_string() + ":" + std::to_string(websocket_.next_layer().socket().remote_endpoint().port());
+            std::cout << "Session obj address " << this << std::endl;
         }
 
         void start() {
+            std::cout <<"Starting session on thread " << std::this_thread::get_id() << std::endl;
             boost::asio::dispatch(
                     websocket_.get_executor(),
                     boost::beast::bind_front_handler(&Session::on_start, shared_from_this())
@@ -31,6 +33,7 @@ namespace Websocket {
 
     private:
         void on_start() {
+            std::cout <<"Session on_start thread id: " << std::this_thread::get_id() << std::endl;
             websocket_.set_option(
                     boost::beast::websocket::stream_base::timeout::suggested(boost::beast::role_type::server)
             );
@@ -48,6 +51,7 @@ namespace Websocket {
         }
 
         void on_accept(boost::beast::error_code err) {
+            std::cout <<"Session on_accept thread id: " << std::this_thread::get_id() << std::endl;
             if (err) {
                 std::cout << "Error: " << err.message() << std::endl;
                 return;
@@ -58,6 +62,8 @@ namespace Websocket {
         }
 
         void async_read() {
+            std::cout <<"Session async_read thread id: " << std::this_thread::get_id() << std::endl;
+            threadIds.insert(std::this_thread::get_id());
             buffer_.clear();
             websocket_.async_read(
                     buffer_,
@@ -66,6 +72,7 @@ namespace Websocket {
         }
 
         void on_read(boost::beast::error_code err, std::size_t bytes_transferred) {
+            std::cout <<"Session on_read thread id: " << std::this_thread::get_id() << std::endl;
             if (err) {
                 std::cout << "Error: " << err.message() << std::endl;
                 return;
@@ -108,6 +115,7 @@ namespace Websocket {
         std::shared_ptr<rps::GameSessionManager> game_session_manager_;
         std::deque<std::string> outgoing_messages_;
         std::string client_;
+        std::unordered_set<std::__thread_id> threadIds;
     };
 
 } // namespace Websocket
